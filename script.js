@@ -1,34 +1,49 @@
 const api_key = 'e8d814377af84511b125933bc6b6e4c8'
 let valor = document.querySelector(".nome");
 let btn = document.querySelector("#buscar");
-const box = document.querySelector(".box");
+const container = document.querySelector(".container");
 
-function append(nome, bg, meta, faixa, gen) {
-    let h1 = document.createElement('h1');
-    let img = document.createElement('img');
-    let critic = document.createElement('p');
-    let rating = document.createElement('p');
-    let newDiv = document.createElement('div');
-    let gens = document.createElement('p');
+function dateFormat(lanc) {
+    const partesData = lanc.split('-');
+  
+    const ano = parseInt(partesData[0]);
+    const mes = parseInt(partesData[1]);
+    const dia = parseInt(partesData[2]);
+  
+    const dataObj = new Date(ano, mes - 1, dia);
+  
+    const nomeDoMes = dataObj.toLocaleDateString('en', { month: 'long' });
+  
+    const dataFormatada = `${nomeDoMes} ${dia}, ${ano}`;
+  
+    return dataFormatada;
+  }
 
-    h1.innerHTML = nome;
-    img.src = bg;
-    critic.innerHTML = meta;
-    rating.innerHTML = faixa;
-    gens.innerHTML = gen;
+function append(nome, bg, lanc, meta, faixa, gen) {
 
-
-    box.appendChild(h1);
-    box.appendChild(img);
-    box.appendChild(newDiv);
-    newDiv.appendChild(critic);
-    newDiv.appendChild(rating);
-    box.appendChild(gens);
+    container.innerHTML += `
+    <div class='box'>
+            <img src='${bg}' />
+            <div class='info'>
+            <h1>${nome}</h1>
+            <p>${dateFormat(lanc)}</p>
+            </div>
+            <div class='infoBottom'>
+        <div class='info-rate'>
+        <p>Metacritic: ${meta}</p>
+        <p>Rating: ${faixa}</p>
+        </div>
+        <div class='gen'>
+            <p>Genrers: ${gen}</p>
+        </div>
+        </div>
+    </div>
+    `
 }
 
 btn.addEventListener('click', () => {
-
-    const url = `https://api.rawg.io/api/games?key=${api_key}&search=${valor.value}&page_size=10`;
+    container.textContent = "";
+    const url = `https://api.rawg.io/api/games?key=${api_key}&search=${valor.value}`;
 
     fetch(url)
         .then(res => res.json())
@@ -42,11 +57,12 @@ btn.addEventListener('click', () => {
                 let nome = data.results[i].name;
                 let dataMeta = data.results[i].metacritic;
                 let dataFaixa = data.results[i].esrb_rating;
+                let lanc = data.results[i].released;
 
                 let meta;
-                dataMeta?
-                meta = dataMeta
-                :meta = "No metacritic"
+                dataMeta ?
+                    meta = dataMeta
+                    : meta = "No metacritic"
 
                 let bg
                 data.results[i].background_image ?
@@ -54,9 +70,9 @@ btn.addEventListener('click', () => {
                     : bg = "https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png";
 
                 let faixa;
-                dataFaixa?
-                faixa = dataFaixa.name
-                : faixa = "No rating";
+                dataFaixa ?
+                    faixa = dataFaixa.name
+                    : faixa = "No rating";
 
                 let gen = [];
                 for (let j = 0; j < data.results[i].genres.length; j++) {
@@ -66,7 +82,7 @@ btn.addEventListener('click', () => {
                 content.push(nome, meta, bg, gen, faixa);
 
 
-                append(nome, bg, meta, faixa, gen);
+                append(nome, bg, lanc, meta, faixa, gen);
 
                 // console.log(content[i]);
             }
@@ -74,5 +90,4 @@ btn.addEventListener('click', () => {
         .catch(err => {
             console.log(err.message);
         })
-
 })
